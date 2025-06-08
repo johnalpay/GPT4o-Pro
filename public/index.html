@@ -14,69 +14,94 @@
       background-color: #4B5563;
       border-radius: 4px;
     }
+
     .chat-bubble {
       padding: 12px 16px;
       border-radius: 20px;
       font-size: 1rem;
       line-height: 1.4;
       word-wrap: break-word;
-      backdrop-filter: blur(6px);
-      transition: all 0.3s ease;
     }
+
     .user-bubble {
       background-color: #2563eb;
       margin-left: auto;
       color: white;
     }
+
     .bot-bubble {
       background-color: #22c55e;
       margin-right: auto;
       color: white;
     }
-    .text-glow {
-      text-shadow: 0 0 10px #60a5fa, 0 0 20px #3b82f6;
-      animation: glow 2s ease-in-out infinite alternate;
+
+    .neon-title {
+      text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff;
     }
-    @keyframes glow {
-      from {
-        text-shadow: 0 0 5px #60a5fa, 0 0 10px #3b82f6;
-      }
-      to {
-        text-shadow: 0 0 15px #60a5fa, 0 0 30px #3b82f6;
+
+    .typing-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      margin: 0 2px;
+      background-color: white;
+      border-radius: 50%;
+      animation: bounce 1.2s infinite ease-in-out both;
+    }
+
+    .typing-dot:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: scale(0);
+      } 
+      40% {
+        transform: scale(1);
       }
     }
   </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen flex items-center justify-center px-4 py-8">
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center px-4 py-8">
 
-  <div class="w-full max-w-2xl bg-gray-800/60 backdrop-blur-lg border border-gray-700 rounded-xl shadow-xl p-6 space-y-4">
-    <div class="text-center space-y-2">
-      <h1 class="text-4xl font-bold flex items-center justify-center gap-2 text-glow">
-        <i data-lucide="bot" class="w-8 h-8"></i> GPT-4o Pro
-      </h1>
-      <p class="text-gray-300 flex items-center justify-center gap-2 text-sm">
-        <i data-lucide="brain" class="w-5 h-5"></i> Ask anything, and get smart AI answers instantly.
-      </p>
-    </div>
+  <h1 class="text-4xl font-bold mb-4 text-center flex items-center gap-2 neon-title">
+    <i data-lucide="bot" class="w-8 h-8"></i> GPT-4o Pro
+  </h1>
 
-    <div id="chatContainer" class="overflow-y-auto px-4 py-4 space-y-4 h-[400px] bg-gray-900/60 rounded-lg border border-gray-700">
+  <p class="mb-2 text-gray-300 text-sm text-center">Choose model:</p>
+  <select id="modelSelect" class="mb-4 px-4 py-2 rounded bg-gray-800 text-white border border-gray-700">
+    <option value="smart">GPT-4o (Smart)</option>
+    <option value="fast">GPT-4o (Fast)</option>
+  </select>
+
+  <div class="w-full max-w-xl flex flex-col border border-gray-700 rounded-lg overflow-hidden bg-gray-800 shadow-lg">
+    <div id="chatContainer" class="flex-1 overflow-y-auto px-4 py-6 space-y-4 max-h-[400px]">
       <div class="chat-bubble bot-bubble flex items-center gap-2 max-w-[80%]">
         <i data-lucide="smile" class="w-5 h-5 text-green-400"></i>
         <span>Hello! Ask me anything 😊</span>
       </div>
     </div>
 
-    <div class="flex gap-2 items-center">
+    <div class="p-4 bg-gray-900 flex items-center gap-2">
       <div class="relative flex-1">
         <input id="question" type="text" placeholder="Type your question here..."
-          class="w-full px-4 py-2 rounded-lg text-black outline-none pr-12 shadow-md" />
+          class="w-full px-4 py-2 rounded-lg text-black outline-none pr-12" />
         <button id="micBtn" title="Speak your question"
-          class="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 hover:bg-red-700 transition-all rounded-full p-2">
-          <i data-lucide="mic" class="w-5 h-5 text-white"></i>
+          class="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 hover:bg-red-700 rounded-full p-2 flex items-center justify-center">
+          <i data-lucide="mic" class="w-6 h-6 text-white"></i>
         </button>
       </div>
       <button id="submitBtn" title="Submit question"
-        class="bg-blue-600 hover:bg-blue-700 transition-all px-4 py-2 rounded-lg font-semibold flex items-center gap-2 shadow-md">
+        class="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2 font-semibold flex items-center justify-center gap-2">
         <i data-lucide="send" class="w-5 h-5"></i> Send
       </button>
     </div>
@@ -89,6 +114,7 @@
     const questionInput = document.getElementById('question');
     const submitBtn = document.getElementById('submitBtn');
     const chatContainer = document.getElementById('chatContainer');
+    const modelSelect = document.getElementById('modelSelect');
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
@@ -128,7 +154,7 @@
       });
     } else {
       micBtn.disabled = true;
-      micBtn.title = "Speech recognition not supported in this browser.";
+      micBtn.title = "Speech recognition not supported.";
     }
 
     function addChatBubble(text, sender = 'user') {
@@ -138,7 +164,7 @@
       const icon = document.createElement('i');
       icon.classList.add('w-5', 'h-5');
       icon.setAttribute('data-lucide', sender === 'user' ? 'user' : 'robot');
-      icon.classList.add(sender === 'user' ? 'text-blue-200' : 'text-green-200');
+      icon.classList.add(sender === 'user' ? 'text-blue-400' : 'text-green-400');
       div.appendChild(icon);
 
       const span = document.createElement('span');
@@ -150,6 +176,65 @@
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
+    function addTypingBubble() {
+      const div = document.createElement('div');
+      div.classList.add('chat-bubble', 'bot-bubble', 'flex', 'items-center', 'gap-2', 'max-w-[80%]');
+      div.setAttribute('id', 'typingBubble');
+
+      const icon = document.createElement('i');
+      icon.setAttribute('data-lucide', 'loader');
+      icon.classList.add('w-5', 'h-5', 'text-green-400');
+      div.appendChild(icon);
+
+      const span = document.createElement('span');
+      span.innerHTML = `
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+      `;
+      div.appendChild(span);
+
+      chatContainer.appendChild(div);
+      lucide.createIcons();
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function removeTypingBubble() {
+      const bubble = document.getElementById('typingBubble');
+      if (bubble) bubble.remove();
+    }
+
+    function typeText(text) {
+      return new Promise(resolve => {
+        const div = document.createElement('div');
+        div.classList.add('chat-bubble', 'bot-bubble', 'flex', 'items-center', 'gap-2', 'max-w-[80%]');
+
+        const icon = document.createElement('i');
+        icon.setAttribute('data-lucide', 'robot');
+        icon.classList.add('w-5', 'h-5', 'text-green-400');
+        div.appendChild(icon);
+
+        const span = document.createElement('span');
+        div.appendChild(span);
+        chatContainer.appendChild(div);
+        lucide.createIcons();
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        let i = 0;
+        function typeChar() {
+          if (i < text.length) {
+            span.textContent += text.charAt(i);
+            i++;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            setTimeout(typeChar, 20);
+          } else {
+            resolve();
+          }
+        }
+        typeChar();
+      });
+    }
+
     async function askQuestion() {
       const q = questionInput.value.trim();
       if (!q) {
@@ -157,30 +242,26 @@
         return;
       }
 
+      const model = modelSelect.value;
+
       addChatBubble(q, 'user');
       questionInput.value = '';
-
-      addChatBubble("Thinking...", 'bot');
+      addTypingBubble();
 
       try {
-        const res = await fetch(`/api/ask?ask=${encodeURIComponent(q)}`);
+        const res = await fetch(`/api/ask?ask=${encodeURIComponent(q)}&model=${model}`);
         const data = await res.json();
 
-        const bubbles = chatContainer.querySelectorAll('.bot-bubble');
-        if (bubbles.length) {
-          const lastBotBubble = bubbles[bubbles.length - 1];
-          if (lastBotBubble.textContent === "Thinking...") {
-            lastBotBubble.remove();
-          }
-        }
+        removeTypingBubble();
 
         if (data.response) {
-          addChatBubble(data.response, 'bot');
+          await typeText(data.response);
         } else {
           addChatBubble("No response received.", 'bot');
         }
       } catch (err) {
         console.error(err);
+        removeTypingBubble();
         addChatBubble("An error occurred while getting the response.", 'bot');
       }
     }
