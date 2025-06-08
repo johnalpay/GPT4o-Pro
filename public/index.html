@@ -1,205 +1,236 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GPT-4o Pro</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <style>
-    /* Scrollbar style for chat container */
-    #chatContainer::-webkit-scrollbar {
-      width: 8px;
-    }
-    #chatContainer::-webkit-scrollbar-thumb {
-      background-color: #4B5563; /* gray-600 */
-      border-radius: 4px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GPT4o Pro Chat</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f3f4f6;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    height: 100vh;
+    align-items: center;
+  }
+  .container {
+    background: white;
+    width: 400px;
+    max-width: 95vw;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.1);
+    display: flex;
+    flex-direction: column;
+    height: 600px;
+  }
+  header {
+    background-color: #2563eb;
+    color: white;
+    padding: 16px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    border-radius: 12px 12px 0 0;
+    text-align: center;
+  }
+  #chat {
+    flex-grow: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  form {
+    display: flex;
+    padding: 12px 16px;
+    gap: 8px;
+    border-top: 1px solid #ddd;
+  }
+  input[type="text"] {
+    flex-grow: 1;
+    padding: 12px 16px;
+    font-size: 1rem;
+    border-radius: 24px;
+    border: 1px solid #ccc;
+    outline-offset: 2px;
+  }
+  input[type="text"]:focus {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 4px #2563ebaa;
+  }
+  button {
+    background-color: #2563eb;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  button:disabled {
+    background-color: #94a3b8;
+    cursor: not-allowed;
+  }
+  button:hover:not(:disabled) {
+    background-color: #1e40af;
+  }
+
+  /* Chat bubbles and avatars */
+  .chat-bubble {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 20px;
+    font-size: 1rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+    max-width: 80%;
+    gap: 12px;
+  }
+  .user-bubble {
+    background-color: #2563eb;
+    margin-left: auto;
+    color: white;
+    flex-direction: row-reverse;
+  }
+  .bot-bubble {
+    background-color: #22c55e;
+    margin-right: auto;
+    color: white;
+  }
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+    flex-shrink: 0;
+  }
+  .user-bubble .avatar {
+    border-color: #3b82f6;
+  }
+  .bot-bubble .avatar {
+    border-color: #22c55e;
+  }
+</style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center px-4 py-8">
-
-  <h1 class="text-4xl font-bold mb-4 text-center flex items-center gap-2">
-    <i data-lucide="bot" class="w-8 h-8"></i> GPT-4o Pro
-  </h1>
-
-  <p class="mb-6 text-center text-gray-300 flex items-center justify-center gap-2">
-    <i data-lucide="brain" class="w-5 h-5"></i>
-    Ask anything, and get smart AI answers instantly.
-  </p>
-
-  <div class="w-full max-w-xl flex flex-col border border-gray-700 rounded-lg overflow-hidden bg-gray-800 shadow-lg">
-
-    <!-- Chat messages container -->
-    <div id="chatContainer" class="flex-1 overflow-y-auto px-4 py-6 space-y-4 max-h-[400px]">
-      <!-- Initial welcome message -->
-      <div class="chat-bubble bot-bubble flex items-center gap-2 max-w-[80%]">
-        <i data-lucide="smile" class="w-5 h-5 text-green-400"></i>
-        <span>Hello! Ask me anything 😊</span>
-      </div>
-    </div>
-
-    <!-- Input area -->
-    <div class="p-4 bg-gray-900 flex items-center gap-2">
-      <div class="relative flex-1">
-        <input id="question" type="text" placeholder="Type your question here..." 
-          class="w-full px-4 py-2 rounded-lg text-black outline-none pr-12" />
-
-        <button id="micBtn" title="Speak your question" 
-          class="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 hover:bg-red-700 rounded-full p-2 flex items-center justify-center">
-          <i data-lucide="mic" class="w-6 h-6 text-white"></i>
-        </button>
-      </div>
-
-      <button id="submitBtn" title="Submit question"
-        class="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2 font-semibold flex items-center justify-center gap-2">
-        <i data-lucide="send" class="w-5 h-5"></i> Send
+<body>
+  <div class="container" role="main" aria-label="GPT4o Pro Chat Application">
+    <header>GPT4o Pro Chat</header>
+    <div id="chat" aria-live="polite" aria-relevant="additions"></div>
+    <form id="chat-form" aria-label="Send message form">
+      <button type="button" id="mic-btn" aria-label="Start voice input">
+        🎤
       </button>
-    </div>
+      <input
+        id="user-input"
+        type="text"
+        autocomplete="off"
+        placeholder="Type your message..."
+        aria-required="true"
+      />
+      <button type="submit" aria-label="Send message">➡️</button>
+    </form>
   </div>
 
-  <script>
-    lucide.createIcons();
+<script>
+  const chatContainer = document.getElementById('chat');
+  const form = document.getElementById('chat-form');
+  const userInput = document.getElementById('user-input');
+  const micBtn = document.getElementById('mic-btn');
 
-    const micBtn = document.getElementById('micBtn');
-    const questionInput = document.getElementById('question');
-    const submitBtn = document.getElementById('submitBtn');
-    const chatContainer = document.getElementById('chatContainer');
+  // Add chat bubble with profile pics
+  function addChatBubble(text, sender = 'user') {
+    const div = document.createElement('div');
+    div.classList.add('chat-bubble', sender === 'user' ? 'user-bubble' : 'bot-bubble');
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognition;
-    if (SpeechRecognition) {
-      recognition = new SpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-
-      recognition.onstart = () => {
-        micBtn.classList.add('bg-red-800');
-        micBtn.title = "Listening...";
-      };
-
-      recognition.onend = () => {
-        micBtn.classList.remove('bg-red-800');
-        micBtn.title = "Speak your question";
-      };
-
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error', event.error);
-        micBtn.classList.remove('bg-red-800');
-        micBtn.title = "Speak your question";
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        questionInput.value = transcript;
-      };
-
-      micBtn.addEventListener('click', () => {
-        if (micBtn.classList.contains('bg-red-800')) {
-          recognition.stop();
-        } else {
-          recognition.start();
-        }
-      });
+    const avatar = document.createElement('img');
+    avatar.classList.add('avatar');
+    if (sender === 'user') {
+      avatar.src = 'https://i.pravatar.cc/36?u=user';
+      avatar.alt = 'User';
     } else {
-      micBtn.disabled = true;
-      micBtn.title = "Speech recognition not supported in this browser.";
+      avatar.src = 'https://i.pravatar.cc/36?u=bot';
+      avatar.alt = 'GPT-4o Pro';
     }
+    div.appendChild(avatar);
 
-    // Add chat bubble helper
-    function addChatBubble(text, sender = 'user') {
-      const div = document.createElement('div');
-      div.classList.add('chat-bubble', sender === 'user' ? 'user-bubble' : 'bot-bubble', 'flex', 'items-center', 'gap-2', 'max-w-[80%]');
-      
-      // Icon
-      const icon = document.createElement('i');
-      icon.classList.add('w-5', 'h-5');
-      if(sender === 'user') {
-        icon.setAttribute('data-lucide', 'user');
-        icon.classList.add('text-blue-400');
+    const span = document.createElement('span');
+    span.textContent = text;
+    div.appendChild(span);
+
+    chatContainer.appendChild(div);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  // Fetch GPT4o Pro API response
+  async function fetchResponse(message) {
+    const url = `https://kaiz-apis.gleeze.com/api/gpt-4o-pro?ask=${encodeURIComponent(message)}&uid=1&imageUrl=&apikey=8323bd36-1268-435c-a4d7-e81aa4c6eaed`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      if(data.response){
+        addChatBubble(data.response, 'bot');
       } else {
-        icon.setAttribute('data-lucide', 'robot');
-        icon.classList.add('text-green-400');
+        addChatBubble('Sorry, no response from API.', 'bot');
       }
-      div.appendChild(icon);
-
-      // Text
-      const span = document.createElement('span');
-      span.textContent = text;
-      div.appendChild(span);
-
-      chatContainer.appendChild(div);
-      lucide.createIcons();
-
-      // Scroll to bottom
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+    } catch (error) {
+      addChatBubble('Error: Could not connect to the API.', 'bot');
     }
+  }
 
-    async function askQuestion() {
-      const q = questionInput.value.trim();
-      if (!q) {
-        alert("Please enter a question first.");
-        return;
-      }
+  // Form submit
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const message = userInput.value.trim();
+    if (!message) return;
+    addChatBubble(message, 'user');
+    userInput.value = '';
+    fetchResponse(message);
+  });
 
-      addChatBubble(q, 'user');
-      questionInput.value = '';
+  // Voice to text with Web Speech API
+  let recognition;
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
 
-      addChatBubble("Thinking...", 'bot');
-
-      try {
-        const res = await fetch(`/api/ask?ask=${encodeURIComponent(q)}`);
-        const data = await res.json();
-
-        // Remove the "Thinking..." bubble
-        const bubbles = chatContainer.querySelectorAll('.bot-bubble');
-        if (bubbles.length) {
-          const lastBotBubble = bubbles[bubbles.length - 1];
-          if (lastBotBubble.textContent === "Thinking...") {
-            lastBotBubble.remove();
-          }
-        }
-
-        if (data.response) {
-          addChatBubble(data.response, 'bot');
-        } else {
-          addChatBubble("No response received.", 'bot');
-        }
-      } catch (err) {
-        console.error(err);
-        addChatBubble("An error occurred while getting the response.", 'bot');
-      }
-    }
-
-    submitBtn.addEventListener('click', askQuestion);
-    questionInput.addEventListener('keydown', e => {
-      if(e.key === 'Enter') askQuestion();
+    recognition.addEventListener('result', event => {
+      const transcript = event.results[0][0].transcript;
+      userInput.value = transcript;
     });
-  </script>
+    recognition.addEventListener('end', () => {
+      micBtn.disabled = false;
+      micBtn.textContent = '🎤';
+    });
+  } else {
+    micBtn.disabled = true;
+    micBtn.title = 'Voice input not supported in this browser';
+  }
 
-  <style>
-    /* Chat bubble styles */
-    .chat-bubble {
-      padding: 12px 16px;
-      border-radius: 20px;
-      font-size: 1rem;
-      line-height: 1.4;
-      word-wrap: break-word;
-    }
-    .user-bubble {
-      background-color: #2563eb; /* blue-600 */
-      margin-left: auto;
-      color: white;
-      max-width: 80%;
-    }
-    .bot-bubble {
-      background-color: #22c55e; /* green-500 */
-      margin-right: auto;
-      color: white;
-      max-width: 80%;
-    }
-  </style>
+  micBtn.addEventListener('click', () => {
+    if (!recognition) return;
+    micBtn.disabled = true;
+    micBtn.textContent = '🎙️...';
+    recognition.start();
+  });
+
+  // Welcome message on load
+  window.addEventListener('load', () => {
+    addChatBubble("Hi there! 😊 How can I help you today? Just type or use the mic to ask me anything.", 'bot');
+  });
+</script>
 </body>
 </html>
