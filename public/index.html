@@ -69,15 +69,31 @@
         transform: scale(1);
       }
     }
+
+    /* Sticky board for title */
+    #stickyHeader {
+      position: sticky;
+      top: 0;
+      background-color: #111827; /* Tailwind's bg-gray-900 but darker */
+      z-index: 50;
+      padding: 1rem 0;
+      border-bottom: 1px solid #374151; /* Tailwind's border-gray-700 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
   </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center px-4 py-8">
 
-  <h1 class="text-4xl font-bold mb-4 text-center flex items-center gap-2 neon-title">
-    <i data-lucide="bot" class="w-8 h-8"></i> GPT-4o Pro
-  </h1>
+  <!-- Sticky header wrapper -->
+  <div id="stickyHeader">
+    <h1 class="text-4xl font-bold mb-0 text-center flex items-center gap-2 neon-title">
+      <i data-lucide="bot" class="w-8 h-8"></i> GPT-4o Pro
+    </h1>
+  </div>
 
-  <p class="mb-2 text-gray-300 text-sm text-center">Choose model:</p>
+  <p class="mb-2 text-gray-300 text-sm text-center mt-4">Choose model:</p>
   <select id="modelSelect" class="mb-4 px-4 py-2 rounded bg-gray-800 text-white border border-gray-700">
     <option value="smart">GPT-4o (Smart)</option>
     <option value="fast">GPT-4o (Fast)</option>
