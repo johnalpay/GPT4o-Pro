@@ -1,6 +1,9 @@
 {
-  "name": "gpt4o-pro-site",
+  "name": "gpt4o-pro-chat",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Chat website for GPT-4o Pro using Kaiz API",
+  "scripts": {
+    "start": "vercel dev"
+  },
   "license": "MIT"
 }
