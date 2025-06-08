@@ -70,56 +70,67 @@
       }
     }
 
+    /* Container holding everything, to control max-width */
+    #mainContainer {
+      max-width: 640px;
+      width: 100%;
+    }
+
     /* Sticky board for title */
     #stickyHeader {
       position: sticky;
       top: 0;
       background-color: #111827; /* Tailwind's bg-gray-900 but darker */
       z-index: 50;
-      padding: 1rem 0;
+      padding: 1rem 1.5rem;
       border-bottom: 1px solid #374151; /* Tailwind's border-gray-700 */
       display: flex;
       justify-content: center;
       align-items: center;
+      /* Make width 100% of #mainContainer */
+      width: 100%;
+      box-sizing: border-box;
     }
   </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center px-4 py-8">
 
-  <!-- Sticky header wrapper -->
-  <div id="stickyHeader">
-    <h1 class="text-4xl font-bold mb-0 text-center flex items-center gap-2 neon-title">
-      <i data-lucide="bot" class="w-8 h-8"></i> GPT-4o Pro
-    </h1>
-  </div>
-
-  <p class="mb-2 text-gray-300 text-sm text-center mt-4">Choose model:</p>
-  <select id="modelSelect" class="mb-4 px-4 py-2 rounded bg-gray-800 text-white border border-gray-700">
-    <option value="smart">GPT-4o (Smart)</option>
-    <option value="fast">GPT-4o (Fast)</option>
-  </select>
-
-  <div class="w-full max-w-xl flex flex-col border border-gray-700 rounded-lg overflow-hidden bg-gray-800 shadow-lg">
-    <div id="chatContainer" class="flex-1 overflow-y-auto px-4 py-6 space-y-4 max-h-[400px]">
-      <div class="chat-bubble bot-bubble flex items-center gap-2 max-w-[80%]">
-        <i data-lucide="smile" class="w-5 h-5 text-green-400"></i>
-        <span>Hello! Ask me anything 😊</span>
-      </div>
+  <div id="mainContainer">
+    <!-- Sticky header wrapper -->
+    <div id="stickyHeader">
+      <h1 class="text-4xl font-bold mb-0 text-center flex items-center gap-2 neon-title">
+        <i data-lucide="bot" class="w-8 h-8"></i> GPT-4o Pro
+      </h1>
     </div>
 
-    <div class="p-4 bg-gray-900 flex items-center gap-2">
-      <div class="relative flex-1">
-        <input id="question" type="text" placeholder="Type your question here..."
-          class="w-full px-4 py-2 rounded-lg text-black outline-none pr-12" />
-        <button id="micBtn" title="Speak your question"
-          class="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 hover:bg-red-700 rounded-full p-2 flex items-center justify-center">
-          <i data-lucide="mic" class="w-6 h-6 text-white"></i>
+    <p class="mb-2 text-gray-300 text-sm text-center mt-4">Choose model:</p>
+    <select id="modelSelect" class="mb-4 px-4 py-2 rounded bg-gray-800 text-white border border-gray-700 w-full">
+      <option value="smart">GPT-4o (Smart)</option>
+      <option value="fast">GPT-4o (Fast)</option>
+    </select>
+
+    <div class="w-full flex flex-col border border-gray-700 rounded-lg overflow-hidden bg-gray-800 shadow-lg">
+      <div id="chatContainer" class="flex-1 overflow-y-auto px-4 py-6 space-y-4 max-h-[400px]">
+        <div class="chat-bubble bot-bubble flex items-center gap-2 max-w-[80%]">
+          <i data-lucide="smile" class="w-5 h-5 text-green-400"></i>
+          <span>Hello! Ask me anything 😊</span>
+        </div>
+      </div>
+
+      <div class="p-4 bg-gray-900 flex items-center gap-2">
+        <div class="relative flex-1">
+          <input id="question" type="text" placeholder="Type your question here..."
+            class="w-full px-4 py-2 rounded-lg text-black outline-none pr-12" />
+          <button id="micBtn" title="Speak your question"
+            class="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 hover:bg-red-700 rounded-full p-2 flex items-center justify-center">
+            <i data-lucide="mic" class="w-6 h-6 text-white"></i>
+          </button>
+        </div>
+        <button id="submitBtn" title="Submit question"
+          class="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2 font-semibold flex items-center justify-center gap-2">
+          <i data-lucide="send" class="w-5 h-5"></i> Send
         </button>
       </div>
-      <button id="submitBtn" title="Submit question"
-        class="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2 font-semibold flex items-center justify-center gap-2">
-        <i data-lucide="send" class="w-5 h-5"></i> Send
-      </button>
     </div>
   </div>
 
@@ -275,16 +286,18 @@
         } else {
           addChatBubble("No response received.", 'bot');
         }
-      } catch (err) {
-        console.error(err);
+      } catch (e) {
         removeTypingBubble();
-        addChatBubble("An error occurred while getting the response.", 'bot');
+        addChatBubble("Error: " + e.message, 'bot');
       }
     }
 
     submitBtn.addEventListener('click', askQuestion);
-    questionInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') askQuestion();
+
+    questionInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        askQuestion();
+      }
     });
   </script>
 </body>
