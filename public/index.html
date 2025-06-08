@@ -1,106 +1,53 @@
 <!DOCTYPE html>
-<html lang="en" class="bg-gray-900 text-white">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>GPT-4o Pro Chat</title>
+  <title>GPT-4o Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
-  <div class="bg-gray-800 p-6 rounded-2xl shadow-xl w-full max-w-xl">
-    <div class="flex justify-between items-center mb-4">
-      <h1 class="text-2xl font-bold">GPT-4o Pro Chat</h1>
-      <div class="space-x-2">
-        <button id="toggleMode" class="text-sm bg-gray-600 px-3 py-1 rounded hover:bg-gray-500">Light Mode</button>
-        <button id="clearHistory" class="text-sm bg-red-600 px-3 py-1 rounded hover:bg-red-500">Clear</button>
-        <button id="exportChat" class="text-sm bg-green-600 px-3 py-1 rounded hover:bg-green-500">Export</button>
-      </div>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center px-4">
+
+  <h1 class="text-4xl font-bold mb-4 text-center">GPT-4o Pro</h1>
+  <p class="mb-6 text-center text-gray-300">Ask anything, and get smart AI answers instantly. 🤖</p>
+
+  <div class="w-full max-w-xl space-y-4">
+    <input id="question" type="text" placeholder="Type your question here..." 
+      class="w-full px-4 py-2 text-black rounded-lg outline-none" />
+
+    <button onclick="askQuestion()" class="w-full bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2 font-semibold">
+      Submit 🔍
+    </button>
+
+    <div id="response" class="mt-4 bg-gray-800 rounded-lg p-4 min-h-[120px] whitespace-pre-wrap">
+      <span class="text-gray-500">Waiting for response...</span>
     </div>
-
-    <form id="askForm" class="flex gap-2 mb-4">
-      <input type="text" id="question" class="w-full p-3 rounded-lg bg-gray-700 text-white" placeholder="Ask me anything..." required />
-      <button class="bg-blue-600 hover:bg-blue-700 px-4 rounded-lg">Ask</button>
-    </form>
-
-    <div id="history" class="space-y-3 max-h-[400px] overflow-y-auto"></div>
   </div>
 
   <script>
-    const form = document.getElementById('askForm');
-    const historyDiv = document.getElementById('history');
-    const toggleMode = document.getElementById('toggleMode');
-    const clearBtn = document.getElementById('clearHistory');
-    const exportBtn = document.getElementById('exportChat');
-    const html = document.documentElement;
-    let dark = true;
+    async function askQuestion() {
+      const q = document.getElementById('question').value.trim();
+      const responseBox = document.getElementById('response');
 
-    toggleMode.addEventListener('click', () => {
-      dark = !dark;
-      html.className = dark ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
-      toggleMode.textContent = dark ? 'Light Mode' : 'Dark Mode';
-    });
-
-    clearBtn.addEventListener('click', () => {
-      localStorage.removeItem('gptChatHistory');
-      historyDiv.innerHTML = '';
-    });
-
-    exportBtn.addEventListener('click', () => {
-      const text = [...document.querySelectorAll('#history div')]
-        .map(div => div.textContent.trim())
-        .join('\n\n');
-      const blob = new Blob([text], { type: 'text/plain' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'gpt4o_chat.txt';
-      a.click();
-    });
-
-    function saveHistory() {
-      localStorage.setItem('gptChatHistory', historyDiv.innerHTML);
-    }
-
-    window.addEventListener('load', () => {
-      const saved = localStorage.getItem('gptChatHistory');
-      if (saved) historyDiv.innerHTML = saved;
-    });
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const questionInput = document.getElementById('question');
-      const question = questionInput.value;
-      questionInput.value = '';
-
-      const userBlock = document.createElement('div');
-      userBlock.innerHTML = `<p class="font-bold text-blue-400">You:</p><p class="ml-2">${question}</p>`;
-      historyDiv.appendChild(userBlock);
-
-      const botBlock = document.createElement('div');
-      botBlock.innerHTML = `<p class="font-bold text-green-400">GPT-4o:</p><p class="ml-2 italic">Thinking...</p>`;
-      historyDiv.appendChild(botBlock);
-      historyDiv.scrollTop = historyDiv.scrollHeight;
-
-      saveHistory();
-
-      try {
-        const res = await fetch(`/api/ask?ask=${encodeURIComponent(question)}`);
-        const data = await res.json();
-        const reply = data.response || data.message || JSON.stringify(data, null, 2);
-
-        botBlock.querySelector('p.italic').textContent = reply;
-        speak(reply);
-      } catch {
-        botBlock.querySelector('p.italic').textContent = 'Error: Hindi makakonekta sa API.';
+      if (!q) {
+        responseBox.innerHTML = "<span class='text-yellow-400'>Please enter a question first.</span>";
+        return;
       }
 
-      historyDiv.scrollTop = historyDiv.scrollHeight;
-      saveHistory();
-    });
+      responseBox.innerHTML = "<span class='text-gray-500'>Thinking...</span>";
 
-    function speak(text) {
-      const msg = new SpeechSynthesisUtterance(text);
-      msg.lang = 'en-US';
-      speechSynthesis.speak(msg);
+      try {
+        const res = await fetch(`/api/ask?ask=${encodeURIComponent(q)}`);
+        const data = await res.json();
+
+        if (data.response) {
+          responseBox.textContent = data.response;
+        } else {
+          responseBox.innerHTML = "<span class='text-red-400'>No response received.</span>";
+        }
+      } catch (err) {
+        responseBox.innerHTML = "<span class='text-red-500'>An error occurred while getting the response.</span>";
+      }
     }
   </script>
 </body>
