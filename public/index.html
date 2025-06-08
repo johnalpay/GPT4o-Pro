@@ -121,8 +121,6 @@
       border-radius: 9999px;
       transition: background-color 0.2s ease;
       white-space: nowrap;
-      display: flex;
-      align-items: center;
     }
 
     #aboutUsFooter a:hover {
@@ -175,13 +173,9 @@
 
   <!-- About Us Footer -->
   <footer id="aboutUsFooter" aria-label="About Us Section">
-    <span>John Albert Alpay</span>
-    <a href="https://www.facebook.com/known.as.kaizenji" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1" aria-label="API by kaizenji">
-      <i data-lucide="code" class="w-5 h-5"></i> API by: kaizenji
-    </a>
-    <a href="https://www.facebook.com/profile.php?id=61560595916704" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1" aria-label="Follow on Facebook">
-      <i data-lucide="facebook" class="w-5 h-5 text-blue-500"></i> Follow
-    </a>
+    <span>API by:</span>
+    <a href="https://www.facebook.com/known.as.kaizenji" target="_blank" rel="noopener noreferrer">kaizenji</a>
+    <a href="https://www.facebook.com/profile.php?id=61560595916704" target="_blank" rel="noopener noreferrer" aria-label="Follow on Facebook">Follow</a>
   </footer>
 
   <script>
@@ -199,33 +193,55 @@
       recognition = new SpeechRecognition();
       recognition.lang = 'en-US';
       recognition.interimResults = false;
-      recognition.continuous = false;
-    } else {
-      micBtn.style.display = 'none'; // hide mic if not supported
-    }
+      recognition.maxAlternatives = 1;
 
-    micBtn.addEventListener('click', () => {
-      if (!recognition) return;
-      recognition.start();
-    });
+      recognition.onstart = () => {
+        micBtn.classList.add('bg-red-800');
+        micBtn.title = "Listening...";
+      };
 
-    if (recognition) {
-      recognition.addEventListener('result', e => {
-        const transcript = e.results[0][0].transcript;
+      recognition.onend = () => {
+        micBtn.classList.remove('bg-red-800');
+        micBtn.title = "Speak your question";
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        micBtn.classList.remove('bg-red-800');
+        micBtn.title = "Speak your question";
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
         questionInput.value = transcript;
+      };
+
+      micBtn.addEventListener('click', () => {
+        if (micBtn.classList.contains('bg-red-800')) {
+          recognition.stop();
+        } else {
+          recognition.start();
+        }
       });
-      recognition.addEventListener('end', () => {
-        // optional: auto-submit question after speech
-        // askQuestion();
-      });
+    } else {
+      micBtn.disabled = true;
+      micBtn.title = "Speech recognition not supported.";
     }
 
-    function addChatBubble(text, sender) {
+    function addChatBubble(text, sender = 'user') {
       const div = document.createElement('div');
-      div.classList.add('chat-bubble');
-      if (sender === 'user') div.classList.add('user-bubble', 'flex', 'items-center', 'justify-end', 'max-w-[80%]');
-      else div.classList.add('bot-bubble', 'flex', 'items-center', 'max-w-[80%]');
-      div.textContent = text;
+      div.classList.add('chat-bubble', sender === 'user' ? 'user-bubble' : 'bot-bubble', 'flex', 'items-center', 'gap-2', 'max-w-[80%]');
+
+      const icon = document.createElement('i');
+      icon.classList.add('w-5', 'h-5');
+      icon.setAttribute('data-lucide', sender === 'user' ? 'user' : 'robot');
+      icon.classList.add(sender === 'user' ? 'text-blue-400' : 'text-green-400');
+      div.appendChild(icon);
+
+      const span = document.createElement('span');
+      span.textContent = text;
+      div.appendChild(span);
+
       chatContainer.appendChild(div);
       chatContainer.scrollTop = chatContainer.scrollHeight;
       lucide.createIcons();
