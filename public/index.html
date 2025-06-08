@@ -69,6 +69,26 @@
         transform: scale(1);
       }
     }
+
+    #chatPanel {
+      position: relative;
+      border: 3px solid #4B5563;
+      border-radius: 1rem;
+      padding: 1rem;
+      background-color: #1f2937;
+      width: 100%;
+      max-width: 640px;
+      height: 600px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 30px rgba(0,255,255,0.2);
+    }
+
+    #chatContainer {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 1rem;
+    }
   </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center px-4 py-8">
@@ -83,15 +103,15 @@
     <option value="fast">GPT-4o (Fast)</option>
   </select>
 
-  <div class="w-full max-w-xl flex flex-col border border-gray-700 rounded-lg overflow-hidden bg-gray-800 shadow-lg">
-    <div id="chatContainer" class="flex-1 overflow-y-auto px-4 py-6 space-y-4 max-h-[400px]">
+  <div id="chatPanel">
+    <div id="chatContainer" class="space-y-4">
       <div class="chat-bubble bot-bubble flex items-center gap-2 max-w-[80%]">
         <i data-lucide="smile" class="w-5 h-5 text-green-400"></i>
         <span>Hello! Ask me anything 😊</span>
       </div>
     </div>
 
-    <div class="p-4 bg-gray-900 flex items-center gap-2">
+    <div class="pt-4 flex items-center gap-2">
       <div class="relative flex-1">
         <input id="question" type="text" placeholder="Type your question here..."
           class="w-full px-4 py-2 rounded-lg text-black outline-none pr-12" />
