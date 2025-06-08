@@ -34,20 +34,17 @@
     const html = document.documentElement;
     let dark = true;
 
-    // Toggle Light/Dark Mode
     toggleMode.addEventListener('click', () => {
       dark = !dark;
       html.className = dark ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
       toggleMode.textContent = dark ? 'Light Mode' : 'Dark Mode';
     });
 
-    // Clear chat history
     clearBtn.addEventListener('click', () => {
       localStorage.removeItem('gptChatHistory');
       historyDiv.innerHTML = '';
     });
 
-    // Export chat
     exportBtn.addEventListener('click', () => {
       const text = [...document.querySelectorAll('#history div')]
         .map(div => div.textContent.trim())
@@ -59,18 +56,15 @@
       a.click();
     });
 
-    // Save history to localStorage
     function saveHistory() {
       localStorage.setItem('gptChatHistory', historyDiv.innerHTML);
     }
 
-    // Load history on load
     window.addEventListener('load', () => {
       const saved = localStorage.getItem('gptChatHistory');
       if (saved) historyDiv.innerHTML = saved;
     });
 
-    // Chat submit
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const questionInput = document.getElementById('question');
