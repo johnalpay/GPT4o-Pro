@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-gray-900 text-white">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GPT-4o Pro Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center h-screen">
+  <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-xl">
+    <h1 class="text-2xl font-bold mb-4 text-center">GPT-4o Pro Chat</h1>
+    <form id="askForm" class="flex gap-2 mb-4">
+      <input type="text" id="question" class="w-full p-3 rounded-lg bg-gray-700 text-white" placeholder="Ask me anything..." required />
+      <button class="bg-blue-600 hover:bg-blue-700 px-4 rounded-lg">Ask</button>
+    </form>
+    <div id="response" class="bg-gray-700 p-4 rounded-lg min-h-[100px] whitespace-pre-wrap"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('askForm');
+    const responseDiv = document.getElementById('response');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const question = document.getElementById('question').value;
+      responseDiv.textContent = 'Thinking...';
+
+      try {
+        const res = await fetch(`/api/ask?ask=${encodeURIComponent(question)}`);
+        const data = await res.json();
+        responseDiv.textContent = data.response || data.message || JSON.stringify(data, null, 2);
+      } catch (err) {
+        responseDiv.textContent = 'Error contacting GPT-4o Pro.';
+      }
+    });
+  </script>
+</body>
+</html>
