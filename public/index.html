@@ -20,8 +20,15 @@
   </p>
 
   <div class="w-full max-w-xl space-y-4">
-    <input id="question" type="text" placeholder="Type your question here..." 
-      class="w-full px-4 py-2 text-black rounded-lg outline-none" />
+    <div class="relative flex items-center">
+      <input id="question" type="text" placeholder="Type your question here..." 
+        class="w-full px-4 py-2 text-black rounded-lg outline-none pr-12" />
+
+      <button id="micBtn" title="Speak your question" 
+        class="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 hover:bg-red-700 rounded-full p-2 flex items-center justify-center">
+        <i data-lucide="mic" class="w-6 h-6 text-white"></i>
+      </button>
+    </div>
 
     <button onclick="askQuestion()" class="w-full bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2 font-semibold flex items-center justify-center gap-2">
       <i data-lucide="search" class="w-5 h-5"></i> Submit
@@ -33,13 +40,62 @@
   </div>
 
   <script>
+    // Initialize Lucide icons on load
+    lucide.createIcons();
+
+    const micBtn = document.getElementById('micBtn');
+    const questionInput = document.getElementById('question');
+
+    // Check browser support for SpeechRecognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        micBtn.classList.add('bg-red-800');
+        micBtn.title = "Listening...";
+      };
+
+      recognition.onend = () => {
+        micBtn.classList.remove('bg-red-800');
+        micBtn.title = "Speak your question";
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        micBtn.classList.remove('bg-red-800');
+        micBtn.title = "Speak your question";
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        questionInput.value = transcript;
+      };
+
+      micBtn.addEventListener('click', () => {
+        if (micBtn.classList.contains('bg-red-800')) {
+          recognition.stop();
+        } else {
+          recognition.start();
+        }
+      });
+    } else {
+      micBtn.disabled = true;
+      micBtn.title = "Speech recognition not supported in this browser.";
+    }
+
     async function askQuestion() {
-      const q = document.getElementById('question').value.trim();
+      const q = questionInput.value.trim();
       const responseBox = document.getElementById('response');
 
       if (!q) {
         responseBox.innerHTML = `<span class='text-yellow-400 flex items-center gap-2'><i data-lucide="alert-circle" class="w-5 h-5"></i> Please enter a question first.</span>`;
-        lucide.createIcons(); return;
+        lucide.createIcons();
+        return;
       }
 
       responseBox.innerHTML = `<span class='text-gray-500 flex items-center gap-2'><i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Thinking...</span>`;
