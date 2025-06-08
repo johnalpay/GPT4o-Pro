@@ -134,6 +134,18 @@
     </div>
   </div>
 
+  <!-- Added footer buttons -->
+  <div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4 bg-gray-800 bg-opacity-80 rounded-full px-4 py-2 shadow-lg z-50">
+    <a href="https://www.facebook.com/known.as.kaizenji" target="_blank" rel="noopener noreferrer"
+      class="flex items-center gap-1 text-sm text-white hover:text-cyan-400 transition">
+      <i data-lucide="server" class="w-5 h-5"></i> API
+    </a>
+    <a href="https://www.facebook.com/profile.php?id=61576287185623" target="_blank" rel="noopener noreferrer"
+      class="flex items-center gap-1 text-sm text-white hover:text-blue-500 transition">
+      <i data-lucide="user-check" class="w-5 h-5"></i> Follow
+    </a>
+  </div>
+
   <script>
     lucide.createIcons();
 
@@ -288,14 +300,17 @@
         }
       } catch (e) {
         removeTypingBubble();
-        addChatBubble("Error: " + e.message, 'bot');
+        addChatBubble("Error getting response.", 'bot');
       }
     }
 
-    submitBtn.addEventListener('click', askQuestion);
+    submitBtn.addEventListener('click', () => {
+      askQuestion();
+    });
 
     questionInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
         askQuestion();
       }
     });
