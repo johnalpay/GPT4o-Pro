@@ -1,38 +1,16 @@
-import express from 'express';
-import fetch from 'node-fetch'; // or native fetch if node supports it
+export default async function handler(req, res) {
+  const { ask } = req.query;
+  if (!ask) return res.status(400).json({ message: 'Missing query.' });
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(express.json());
-
-app.get('/api/ask', async (req, res) => {
-  const question = req.query.ask;
-  if (!question) {
-    return res.status(400).json({ error: "Missing 'ask' query parameter" });
-  }
+  const apiUrl = `https://kaiz-apis.gleeze.com/api/gpt-4o-pro?ask=${encodeURIComponent(ask)}&uid=1&imageUrl=&apikey=8323bd36-1268-435c-a4d7-e81aa4c6eaed`;
 
   try {
-    const apiUrl = `https://kaiz-apis.gleeze.com/api/gpt-4o-pro?ask=${encodeURIComponent(question)}&uid=1&imageUrl=&apikey=8323bd36-1268-435c-a4d7-e81aa4c6eaed`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
 
-    const apiResponse = await fetch(apiUrl);
-    if (!apiResponse.ok) {
-      return res.status(500).json({ error: 'Failed to fetch from GPT-4o Pro API' });
-    }
-
-    const apiData = await apiResponse.json();
-
-    // Return only relevant part to frontend
-    return res.json({
-      author: apiData.author || "GPT-4o Pro",
-      response: apiData.response || "No response from GPT API",
-    });
-  } catch (err) {
-    console.error("API error:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('API error:', error);
+    res.status(500).json({ message: 'Unable to connect to the API.' });
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
+}
