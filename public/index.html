@@ -5,55 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GPT-4o Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* Scrollbar style for chat container */
     #chatContainer::-webkit-scrollbar {
       width: 8px;
     }
     #chatContainer::-webkit-scrollbar-thumb {
-      background-color: #4B5563; /* gray-600 */
+      background-color: #4B5563;
       border-radius: 4px;
+    }
+    .chat-bubble {
+      padding: 12px 16px;
+      border-radius: 20px;
+      font-size: 1rem;
+      line-height: 1.4;
+      word-wrap: break-word;
+      backdrop-filter: blur(6px);
+      transition: all 0.3s ease;
+    }
+    .user-bubble {
+      background-color: #2563eb;
+      margin-left: auto;
+      color: white;
+    }
+    .bot-bubble {
+      background-color: #22c55e;
+      margin-right: auto;
+      color: white;
     }
   </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center px-4 py-8">
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen flex items-center justify-center px-4 py-8">
 
-  <h1 class="text-4xl font-bold mb-4 text-center flex items-center gap-2">
-    <i data-lucide="bot" class="w-8 h-8"></i> GPT-4o Pro
-  </h1>
+  <div class="w-full max-w-2xl bg-gray-800/60 backdrop-blur-lg border border-gray-700 rounded-xl shadow-xl p-6 space-y-4">
+    <div class="text-center space-y-2">
+      <h1 class="text-4xl font-bold flex items-center justify-center gap-2">
+        <i data-lucide="bot" class="w-8 h-8"></i> GPT-4o Pro
+      </h1>
+      <p class="text-gray-300 flex items-center justify-center gap-2 text-sm">
+        <i data-lucide="brain" class="w-5 h-5"></i> Ask anything, and get smart AI answers instantly.
+      </p>
+    </div>
 
-  <p class="mb-6 text-center text-gray-300 flex items-center justify-center gap-2">
-    <i data-lucide="brain" class="w-5 h-5"></i>
-    Ask anything, and get smart AI answers instantly.
-  </p>
-
-  <div class="w-full max-w-xl flex flex-col border border-gray-700 rounded-lg overflow-hidden bg-gray-800 shadow-lg">
-
-    <!-- Chat messages container -->
-    <div id="chatContainer" class="flex-1 overflow-y-auto px-4 py-6 space-y-4 max-h-[400px]">
-      <!-- Initial welcome message -->
+    <div id="chatContainer" class="overflow-y-auto px-4 py-4 space-y-4 h-[400px] bg-gray-900/60 rounded-lg border border-gray-700">
       <div class="chat-bubble bot-bubble flex items-center gap-2 max-w-[80%]">
         <i data-lucide="smile" class="w-5 h-5 text-green-400"></i>
         <span>Hello! Ask me anything 😊</span>
       </div>
     </div>
 
-    <!-- Input area -->
-    <div class="p-4 bg-gray-900 flex items-center gap-2">
+    <div class="flex gap-2 items-center">
       <div class="relative flex-1">
-        <input id="question" type="text" placeholder="Type your question here..." 
-          class="w-full px-4 py-2 rounded-lg text-black outline-none pr-12" />
-
-        <button id="micBtn" title="Speak your question" 
-          class="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 hover:bg-red-700 rounded-full p-2 flex items-center justify-center">
-          <i data-lucide="mic" class="w-6 h-6 text-white"></i>
+        <input id="question" type="text" placeholder="Type your question here..."
+          class="w-full px-4 py-2 rounded-lg text-black outline-none pr-12 shadow-md" />
+        <button id="micBtn" title="Speak your question"
+          class="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 hover:bg-red-700 transition-all rounded-full p-2">
+          <i data-lucide="mic" class="w-5 h-5 text-white"></i>
         </button>
       </div>
-
       <button id="submitBtn" title="Submit question"
-        class="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2 font-semibold flex items-center justify-center gap-2">
+        class="bg-blue-600 hover:bg-blue-700 transition-all px-4 py-2 rounded-lg font-semibold flex items-center gap-2 shadow-md">
         <i data-lucide="send" class="w-5 h-5"></i> Send
       </button>
     </div>
@@ -108,32 +119,22 @@
       micBtn.title = "Speech recognition not supported in this browser.";
     }
 
-    // Add chat bubble helper
     function addChatBubble(text, sender = 'user') {
       const div = document.createElement('div');
       div.classList.add('chat-bubble', sender === 'user' ? 'user-bubble' : 'bot-bubble', 'flex', 'items-center', 'gap-2', 'max-w-[80%]');
-      
-      // Icon
+
       const icon = document.createElement('i');
       icon.classList.add('w-5', 'h-5');
-      if(sender === 'user') {
-        icon.setAttribute('data-lucide', 'user');
-        icon.classList.add('text-blue-400');
-      } else {
-        icon.setAttribute('data-lucide', 'robot');
-        icon.classList.add('text-green-400');
-      }
+      icon.setAttribute('data-lucide', sender === 'user' ? 'user' : 'robot');
+      icon.classList.add(sender === 'user' ? 'text-blue-200' : 'text-green-200');
       div.appendChild(icon);
 
-      // Text
       const span = document.createElement('span');
       span.textContent = text;
       div.appendChild(span);
 
       chatContainer.appendChild(div);
       lucide.createIcons();
-
-      // Scroll to bottom
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
@@ -153,7 +154,6 @@
         const res = await fetch(`/api/ask?ask=${encodeURIComponent(q)}`);
         const data = await res.json();
 
-        // Remove the "Thinking..." bubble
         const bubbles = chatContainer.querySelectorAll('.bot-bubble');
         if (bubbles.length) {
           const lastBotBubble = bubbles[bubbles.length - 1];
@@ -175,31 +175,8 @@
 
     submitBtn.addEventListener('click', askQuestion);
     questionInput.addEventListener('keydown', e => {
-      if(e.key === 'Enter') askQuestion();
+      if (e.key === 'Enter') askQuestion();
     });
   </script>
-
-  <style>
-    /* Chat bubble styles */
-    .chat-bubble {
-      padding: 12px 16px;
-      border-radius: 20px;
-      font-size: 1rem;
-      line-height: 1.4;
-      word-wrap: break-word;
-    }
-    .user-bubble {
-      background-color: #2563eb; /* blue-600 */
-      margin-left: auto;
-      color: white;
-      max-width: 80%;
-    }
-    .bot-bubble {
-      background-color: #22c55e; /* green-500 */
-      margin-right: auto;
-      color: white;
-      max-width: 80%;
-    }
-  </style>
 </body>
 </html>
