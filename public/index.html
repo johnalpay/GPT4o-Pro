@@ -2,13 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GPT-4o Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    /* Scrollbar style for chat container */
+    #chatContainer::-webkit-scrollbar {
+      width: 8px;
+    }
+    #chatContainer::-webkit-scrollbar-thumb {
+      background-color: #4B5563; /* gray-600 */
+      border-radius: 4px;
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center px-4">
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center px-4 py-8">
 
   <h1 class="text-4xl font-bold mb-4 text-center flex items-center gap-2">
     <i data-lucide="bot" class="w-8 h-8"></i> GPT-4o Pro
@@ -19,34 +29,44 @@
     Ask anything, and get smart AI answers instantly.
   </p>
 
-  <div class="w-full max-w-xl space-y-4">
-    <div class="relative flex items-center">
-      <input id="question" type="text" placeholder="Type your question here..." 
-        class="w-full px-4 py-2 text-black rounded-lg outline-none pr-12" />
+  <div class="w-full max-w-xl flex flex-col border border-gray-700 rounded-lg overflow-hidden bg-gray-800 shadow-lg">
 
-      <button id="micBtn" title="Speak your question" 
-        class="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 hover:bg-red-700 rounded-full p-2 flex items-center justify-center">
-        <i data-lucide="mic" class="w-6 h-6 text-white"></i>
-      </button>
+    <!-- Chat messages container -->
+    <div id="chatContainer" class="flex-1 overflow-y-auto px-4 py-6 space-y-4 max-h-[400px]">
+      <!-- Initial welcome message -->
+      <div class="chat-bubble bot-bubble flex items-center gap-2 max-w-[80%]">
+        <i data-lucide="smile" class="w-5 h-5 text-green-400"></i>
+        <span>Hello! Ask me anything 😊</span>
+      </div>
     </div>
 
-    <button onclick="askQuestion()" class="w-full bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2 font-semibold flex items-center justify-center gap-2">
-      <i data-lucide="search" class="w-5 h-5"></i> Submit
-    </button>
+    <!-- Input area -->
+    <div class="p-4 bg-gray-900 flex items-center gap-2">
+      <div class="relative flex-1">
+        <input id="question" type="text" placeholder="Type your question here..." 
+          class="w-full px-4 py-2 rounded-lg text-black outline-none pr-12" />
 
-    <div id="response" class="mt-4 bg-gray-800 rounded-lg p-4 min-h-[120px] whitespace-pre-wrap">
-      <span class="text-gray-500 flex items-center gap-2"><i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Waiting for response...</span>
+        <button id="micBtn" title="Speak your question" 
+          class="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 hover:bg-red-700 rounded-full p-2 flex items-center justify-center">
+          <i data-lucide="mic" class="w-6 h-6 text-white"></i>
+        </button>
+      </div>
+
+      <button id="submitBtn" title="Submit question"
+        class="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2 font-semibold flex items-center justify-center gap-2">
+        <i data-lucide="send" class="w-5 h-5"></i> Send
+      </button>
     </div>
   </div>
 
   <script>
-    // Initialize Lucide icons on load
     lucide.createIcons();
 
     const micBtn = document.getElementById('micBtn');
     const questionInput = document.getElementById('question');
+    const submitBtn = document.getElementById('submitBtn');
+    const chatContainer = document.getElementById('chatContainer');
 
-    // Check browser support for SpeechRecognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
     if (SpeechRecognition) {
@@ -88,39 +108,98 @@
       micBtn.title = "Speech recognition not supported in this browser.";
     }
 
+    // Add chat bubble helper
+    function addChatBubble(text, sender = 'user') {
+      const div = document.createElement('div');
+      div.classList.add('chat-bubble', sender === 'user' ? 'user-bubble' : 'bot-bubble', 'flex', 'items-center', 'gap-2', 'max-w-[80%]');
+      
+      // Icon
+      const icon = document.createElement('i');
+      icon.classList.add('w-5', 'h-5');
+      if(sender === 'user') {
+        icon.setAttribute('data-lucide', 'user');
+        icon.classList.add('text-blue-400');
+      } else {
+        icon.setAttribute('data-lucide', 'robot');
+        icon.classList.add('text-green-400');
+      }
+      div.appendChild(icon);
+
+      // Text
+      const span = document.createElement('span');
+      span.textContent = text;
+      div.appendChild(span);
+
+      chatContainer.appendChild(div);
+      lucide.createIcons();
+
+      // Scroll to bottom
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
     async function askQuestion() {
       const q = questionInput.value.trim();
-      const responseBox = document.getElementById('response');
-
       if (!q) {
-        responseBox.innerHTML = `<span class='text-yellow-400 flex items-center gap-2'><i data-lucide="alert-circle" class="w-5 h-5"></i> Please enter a question first.</span>`;
-        lucide.createIcons();
+        alert("Please enter a question first.");
         return;
       }
 
-      responseBox.innerHTML = `<span class='text-gray-500 flex items-center gap-2'><i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Thinking...</span>`;
-      lucide.createIcons();
+      addChatBubble(q, 'user');
+      questionInput.value = '';
+
+      addChatBubble("Thinking...", 'bot');
 
       try {
         const res = await fetch(`/api/ask?ask=${encodeURIComponent(q)}`);
         const data = await res.json();
 
+        // Remove the "Thinking..." bubble
+        const bubbles = chatContainer.querySelectorAll('.bot-bubble');
+        if (bubbles.length) {
+          const lastBotBubble = bubbles[bubbles.length - 1];
+          if (lastBotBubble.textContent === "Thinking...") {
+            lastBotBubble.remove();
+          }
+        }
+
         if (data.response) {
-          responseBox.textContent = data.response;
+          addChatBubble(data.response, 'bot');
         } else {
-          responseBox.innerHTML = `<span class='text-red-400 flex items-center gap-2'><i data-lucide="x-circle" class="w-5 h-5"></i> No response received.</span>`;
+          addChatBubble("No response received.", 'bot');
         }
       } catch (err) {
-        responseBox.innerHTML = `<span class='text-red-500 flex items-center gap-2'><i data-lucide="alert-octagon" class="w-5 h-5"></i> An error occurred while getting the response.</span>`;
+        console.error(err);
+        addChatBubble("An error occurred while getting the response.", 'bot');
       }
-
-      lucide.createIcons();
     }
+
+    submitBtn.addEventListener('click', askQuestion);
+    questionInput.addEventListener('keydown', e => {
+      if(e.key === 'Enter') askQuestion();
+    });
   </script>
 
-  <!-- Activate Lucide Icons -->
-  <script>
-    lucide.createIcons();
-  </script>
+  <style>
+    /* Chat bubble styles */
+    .chat-bubble {
+      padding: 12px 16px;
+      border-radius: 20px;
+      font-size: 1rem;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+    .user-bubble {
+      background-color: #2563eb; /* blue-600 */
+      margin-left: auto;
+      color: white;
+      max-width: 80%;
+    }
+    .bot-bubble {
+      background-color: #22c55e; /* green-500 */
+      margin-right: auto;
+      color: white;
+      max-width: 80%;
+    }
+  </style>
 </body>
 </html>
